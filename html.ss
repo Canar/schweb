@@ -119,7 +119,7 @@ EOF
     (else (->html (format "~A" node)))))
 
 
-(define (->html node)
+#;(define (->html node)
   (cond
     ((string? node) node)
     ((symbol? node) (symbol->string node))
@@ -148,14 +148,48 @@ EOF
                      (eq? (caar parts) '@))
                 (loop (cdr parts) (attrs->string (cdar (car parts))) body))
                (else
-                (loop (cdr parts) attrs (cons (car parts) body)))))))
-
+                (loop (cdr parts) attrs (cons (car parts) body))))))))
     (else (->html (format "~A" node)))))
+
+(define (render-html-node node)
+  (cond
+    ((string? node) node)
+    ((symbol? node) (symbol->string node))
+    ((number? node) (number->string node))
+    ((boolean? node) (if node "true" "false"))
+    ((list? node) (render-html-list node))
+    (else (render-html-node (format "~A" node)))))
+
+(define (render-html-list node)
+ (let ((tag (car node))
+	   (parts (cdr node)))
+   (if (member tag void-tags)
+	   (let loop ((parts parts) (attrs ""))
+		 (cond
+		   ((null? parts) (string-append "<" (render-html-node tag) attrs " />"))
+		   ((and (pair? (car parts))
+				 (eq? (caar parts) '@))
+			(loop (cdr parts) (attrs->string (cdar (car parts)))))
+		   (else (loop (cdr parts) attrs))))
+	   (let loop ((parts parts) (attrs "") (body '()))
+		 (cond
+		   ((null? parts)
+			(string-append
+			  "<" (render-html-node tag) attrs ">"
+			  (apply string-append (map render-html-node (reverse body)))
+			  "</" (render-html-node tag) ">"))
+		   ((and (pair? (car parts))
+				 (eq? (caar parts) '@))
+			(loop (cdr parts) (attrs->string (cdar (car parts))) body))
+		   (else
+			(loop (cdr parts) attrs (cons (car parts) body))))))))
+
+
 
 (define (html5 . body)
   (string-append
     "<!DOCTYPE html>\n"
-    (->html `(html ,@body))))
+    (render-html-node `(html ,@body))))
 
 (begin (display (html5 `(head (title "Big T")) `(body (p "meow")))))
 
