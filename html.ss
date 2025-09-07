@@ -1,71 +1,36 @@
 (import srfi-13 matchable)
 
-(define (generate-html title body)
-  (display #<#EOF
-<!doctype html>
-<html>
-<head>
-<title>
-#{title}
-</title>
-</head>
-<body>
-#{body}
-</body>
-</html>
-
-EOF
-))
-
-(define-syntax generate-html-new 
-  (syntax-rules ()
-	((_ (key val) ...)
-	 (generate-html-impl (list (list 'key val) ... )))))
-
-(define (generate-html-impl args)
-  (let ((title (or (assoc-ref args 'title) "ERROR" ))
-		(body (or (assoc-ref args 'body) "<h2>ERROR</h2>" ))
-		(style (assoc-ref args 'style)))
-  (display #<#EOF
-<!doctype html>
-<html>
-<head>
-<title>
-#{title}
-</title>
-#{(if style (string-append "<style>" style "</style>") "")}
-</head>
-<body>
-#{body}
-</body>
-</html>
-
-
-EOF
-)))
-
-(define (assoc-ref alist key)
-  (let ((pair (assoc key alist)))
-    (and pair (cadr pair))))
+(define (string-replace-all str from to)
+  (let ((from-len (string-length from)))
+    (let loop ((i 0) (parts '()))
+      (let ((pos (string-contains str from i)))
+        (if pos
+            (loop (+ pos from-len)
+                  (cons (substring str i pos)
+                        (cons to parts)))
+            (string-concatenate-reverse (cons (substring str i) parts)))))))
 
 
 ; CSS stuff
-(define (property->css prop)
+(define (escape-css str)
+  (string-replace-all str "\"" "\\\""))
+
+(define (property-render prop)
   (let ((name (car prop))
-        (value (cadr prop)))
+        (value (escape-css (cadr prop))))
     (string-append "  " (symbol->string name) ": " value ";\n")))
 
-(define (rule->css selector props)
+(define (rule-render selector props)
   (string-append
     (symbol->string selector) " {\n"
-    (string-join (map property->css props)) "}\n\n"))
+    (string-join (map property-render props)) "}\n\n"))
 
-(define (scss->css scss)
+(define (css-render sexp)
   (string-join
     (map (match-lambda
            ((selector props)
-            (rule->css selector props)))
-         scss)))
+            (rule-render selector props)))
+         sexp)))
 
 (define (render-html doc)
   (string-append
@@ -74,6 +39,17 @@ EOF
 	"\n"))
 
 ; HTML renderer
+ 
+(define (escape-html str)
+  (fold-left
+    (lambda (s pair)
+      (string-replace-all s (car pair) (cadr pair)))
+    str
+    '(("&" . "&amp;")
+      ("<" . "<")
+      (">" . ">")
+      ("\"" . "&quot;"))))
+
 (define (attrs->string attrs)
   (if (null? attrs)
       ""
@@ -94,7 +70,6 @@ EOF
     ((number? node) (number->string node))
     ((boolean? node) (if node "true" "false"))
     (else (render-html-node (format "~A" node)))))
-
 
 (define (render-html-node-void tag parts)
    (let loop ((parts parts) (attrs ""))
@@ -133,18 +108,6 @@ EOF
 
 (begin (display (html5 
 				  `((title "Big T")
-					(style ,(scss->css `((body ((background white)))))))
+					(style ,(css-render `((body ((background "white")))))))
 				  `((p meow)))))
-
-
-
-; (begin (display (render-html `(html (head (title "Big T")) (body (p "meow"))))))
-
-#;(begin
-  (generate-html-new
-	(title "meow")
-	(body "whatever")))
-#; (begin
-  (generate-html "This is my title!" "<p>bodytext</p>" ))
-#; (begin (display (scss->css '((body ((background "white")))))))
 
