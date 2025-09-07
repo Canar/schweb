@@ -1,4 +1,4 @@
-(import srfi-13 matchable sxml-serializer)
+(import srfi-13 matchable)
 
 (define (generate-html title body)
   (display #<#EOF
@@ -74,7 +74,6 @@ EOF
 	"\n"))
 
 ; HTML renderer
-
 (define (attrs->string attrs)
   (if (null? attrs)
       ""
@@ -85,113 +84,57 @@ EOF
                       (string-append " " (symbol->string k) "=\"" v "\"")))
                   attrs))))
 
-(define void-tags
-  '(br hr img input meta link base area col embed param source track wbr))
-
-#;(define (->html node)
-  (cond
-    ((string? node) node)
-    ((symbol? node) (symbol->string node))
-    ((number? node) (number->string node))
-
-    ((list? node)
-     (let ((tag (car node))
-           (rest (cdr node)))
-       (if (member tag void-tags)
-           (if (and (pair? rest)
-                    (pair? (car rest))
-                    (eq? (caar rest) '@))
-               (let ((attrs (attrs->string (cdar (car rest)))))
-                 (string-append "<" (->html tag) attrs " />"))
-               (string-append "<" (->html tag) " />"))
-           (let ((with-attr (if (and (pair? rest)
-                                     (pair? (car rest))
-                                     (eq? (caar rest) '@))
-                                (begin
-                                  (set! rest (cdr rest))
-                                  (attrs->string (cdar (car rest))))
-                                "")))
-             (string-append
-               "<" (->html tag) with-attr ">"
-               (apply string-append (map ->html rest))
-               "</" (->html tag) ">")))))
-
-    (else (->html (format "~A" node)))))
-
-
-#;(define (->html node)
-  (cond
-    ((string? node) node)
-    ((symbol? node) (symbol->string node))
-    ((number? node) (number->string node))
-    ((boolean? node) (if node "true" "false"))
-
-    ((list? node)
-     (let ((tag (car node))
-           (parts (cdr node)))
-       (if (member tag void-tags)
-           (let loop ((parts parts) (attrs ""))
-             (cond
-               ((null? parts) (string-append "<" (->html tag) attrs " />"))
-               ((and (pair? (car parts))
-                     (eq? (caar parts) '@))
-                (loop (cdr parts) (attrs->string (cdar (car parts)))))
-               (else (loop (cdr parts) attrs))))
-           (let loop ((parts parts) (attrs "") (body '()))
-             (cond
-               ((null? parts)
-                (string-append
-                  "<" (->html tag) attrs ">"
-                  (apply string-append (map ->html (reverse body)))
-                  "</" (->html tag) ">"))
-               ((and (pair? (car parts))
-                     (eq? (caar parts) '@))
-                (loop (cdr parts) (attrs->string (cdar (car parts))) body))
-               (else
-                (loop (cdr parts) attrs (cons (car parts) body))))))))
-    (else (->html (format "~A" node)))))
+(define void-tags '(br hr img input meta link base area col embed param source track wbr))
 
 (define (render-html-node node)
   (cond
     ((string? node) node)
+    ((list? node) (render-html-list node))
     ((symbol? node) (symbol->string node))
     ((number? node) (number->string node))
     ((boolean? node) (if node "true" "false"))
-    ((list? node) (render-html-list node))
     (else (render-html-node (format "~A" node)))))
+
+
+(define (render-html-node-void tag parts)
+   (let loop ((parts parts) (attrs ""))
+	 (cond
+	   ((null? parts) (string-append "<" (render-html-node tag) attrs " />"))
+	   ((and (pair? (car parts))
+			 (eq? (caar parts) '@))
+		(loop (cdr parts) (attrs->string (cdar (car parts)))))
+	   (else (loop (cdr parts) attrs)))))
+
+(define (render-html-node-nonvoid tag parts)
+	(let loop ((parts parts) (attrs "") (body '()))
+	 (cond
+	   ((null? parts)
+		(string-append
+		  "<" (render-html-node tag) attrs ">"
+		  (apply string-append (map render-html-node (reverse body)))
+		  "</" (render-html-node tag) ">"))
+	   ((and (pair? (car parts))
+			 (eq? (caar parts) '@))
+		(loop (cdr parts) (attrs->string (cdar (car parts))) body))
+	   (else
+		(loop (cdr parts) attrs (cons (car parts) body))))))
 
 (define (render-html-list node)
  (let ((tag (car node))
 	   (parts (cdr node)))
    (if (member tag void-tags)
-	   (let loop ((parts parts) (attrs ""))
-		 (cond
-		   ((null? parts) (string-append "<" (render-html-node tag) attrs " />"))
-		   ((and (pair? (car parts))
-				 (eq? (caar parts) '@))
-			(loop (cdr parts) (attrs->string (cdar (car parts)))))
-		   (else (loop (cdr parts) attrs))))
-	   (let loop ((parts parts) (attrs "") (body '()))
-		 (cond
-		   ((null? parts)
-			(string-append
-			  "<" (render-html-node tag) attrs ">"
-			  (apply string-append (map render-html-node (reverse body)))
-			  "</" (render-html-node tag) ">"))
-		   ((and (pair? (car parts))
-				 (eq? (caar parts) '@))
-			(loop (cdr parts) (attrs->string (cdar (car parts))) body))
-		   (else
-			(loop (cdr parts) attrs (cons (car parts) body))))))))
+	   (render-html-node-void tag parts)
+	   (render-html-node-nonvoid tag parts))))
 
-
-
-(define (html5 . body)
+(define (html5 head body)
   (string-append
     "<!DOCTYPE html>\n"
-    (render-html-node `(html ,@body))))
+    (render-html-node `(html (head ,@head) (body ,@body)))))
 
-(begin (display (html5 `(head (title "Big T")) `(body (p "meow")))))
+(begin (display (html5 
+				  `((title "Big T")
+					(style ,(scss->css `((body ((background white)))))))
+				  `((p meow)))))
 
 
 
