@@ -88,7 +88,7 @@ EOF
 (define void-tags
   '(br hr img input meta link base area col embed param source track wbr))
 
-(define (->html node)
+#;(define (->html node)
   (cond
     ((string? node) node)
     ((symbol? node) (symbol->string node))
@@ -115,6 +115,40 @@ EOF
                "<" (->html tag) with-attr ">"
                (apply string-append (map ->html rest))
                "</" (->html tag) ">")))))
+
+    (else (->html (format "~A" node)))))
+
+
+(define (->html node)
+  (cond
+    ((string? node) node)
+    ((symbol? node) (symbol->string node))
+    ((number? node) (number->string node))
+    ((boolean? node) (if node "true" "false"))
+
+    ((list? node)
+     (let ((tag (car node))
+           (parts (cdr node)))
+       (if (member tag void-tags)
+           (let loop ((parts parts) (attrs ""))
+             (cond
+               ((null? parts) (string-append "<" (->html tag) attrs " />"))
+               ((and (pair? (car parts))
+                     (eq? (caar parts) '@))
+                (loop (cdr parts) (attrs->string (cdar (car parts)))))
+               (else (loop (cdr parts) attrs))))
+           (let loop ((parts parts) (attrs "") (body '()))
+             (cond
+               ((null? parts)
+                (string-append
+                  "<" (->html tag) attrs ">"
+                  (apply string-append (map ->html (reverse body)))
+                  "</" (->html tag) ">"))
+               ((and (pair? (car parts))
+                     (eq? (caar parts) '@))
+                (loop (cdr parts) (attrs->string (cdar (car parts))) body))
+               (else
+                (loop (cdr parts) attrs (cons (car parts) body)))))))
 
     (else (->html (format "~A" node)))))
 
