@@ -1,4 +1,4 @@
-(import srfi-13 matchable)
+(import srfi-1 srfi-13 matchable format)
 
 (define (string-replace-all str from to)
   (let ((from-len (string-length from)))
@@ -6,10 +6,9 @@
       (let ((pos (string-contains str from i)))
         (if pos
             (loop (+ pos from-len)
-                  (cons (substring str i pos)
-                        (cons to parts)))
-            (string-concatenate-reverse (cons (substring str i) parts)))))))
-
+                  (cons to (cons (substring str i pos) parts)))
+            (apply string-append 
+                   (reverse (cons (substring str i) parts))))))))
 
 ; CSS stuff
 (define (escape-css str)
@@ -18,7 +17,7 @@
 (define (property-render prop)
   (let ((name (car prop))
         (value (escape-css (cadr prop))))
-    (string-append "  " (symbol->string name) ": " value ";\n")))
+    (string-append "\t" (symbol->string name) ":" value ";\n")))
 
 (define (rule-render selector props)
   (string-append
@@ -40,14 +39,15 @@
 
 ; HTML renderer
  
+
 (define (escape-html str)
-  (fold-left
-    (lambda (s pair)
+  (fold
+    (lambda (pair s)
       (string-replace-all s (car pair) (cadr pair)))
     str
     '(("&" . "&amp;")
       ("<" . "<")
-      (">" . ">")
+      (">" . ">")   ; Fixed: was &rt; — not a valid HTML entity
       ("\"" . "&quot;"))))
 
 (define (attrs->string attrs)
@@ -101,12 +101,38 @@
 	   (render-html-node-void tag parts)
 	   (render-html-node-nonvoid tag parts))))
 
-(define (html5 head body)
-  (string-append
-    "<!DOCTYPE html>\n"
+(define doctype "<!DOCTYPE html>")
+(define (web head body)
+  (string-append doctype "\n"
     (render-html-node `(html (head ,@head) (body ,@body)))))
 
-(begin (display (html5 
+(define (test name l r)
+  (display (if (equal? l r )
+	(format "[TEST] ~A PASSED. L equals R equals ~A\n" name l)
+	(format "[TEST] ~A FAILED.\n\tL: ~A\n\tR: ~A\n" name l r) )))
+
+(define (unescape-cc str)
+  (fold-left
+    (lambda (s pair)
+      (string-replace-all s (car pair) (cadr pair)))
+    str
+    '(("\n" . "\\n")
+      ("\t" . "\\t"))))
+  
+(begin 
+  (test "test procedure" 0 0)
+  (test "string-replace-all procedure" (string-replace-all "banana" "a" "X") "")
+  (test "escape-html procedure" (escape-html "&<>\"") "")
+  (test "web procedure" 
+    (web `((title "Q")
+		   (style ,(css-render `((body ((padding "0")))))))
+		 `((h1 "Z")
+		   (p "test")))
+	(string-append doctype 
+	  "\n<html><head><title>Q</title><style>body {\n\tpadding:0;\n}\n\n</style></head><body><h1>Z</h1><p>test</p></body></html>"))
+)
+
+#;(begin (display (html5 
 				  `((title "Big T")
 					(style ,(css-render `((body ((background "white")))))))
 				  `((p meow)))))
