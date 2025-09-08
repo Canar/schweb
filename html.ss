@@ -45,10 +45,10 @@
     (lambda (pair s)
       (string-replace-all s (car pair) (cadr pair)))
     str
-    '(("&" . "&amp;")
-      ("<" . "<")
-      (">" . ">")   ; Fixed: was &rt; — not a valid HTML entity
-      ("\"" . "&quot;"))))
+    '(("&" "&amp;")
+      ("<" "&lt;")
+      (">" "&gt;") 
+      ("\"" "&quot;"))))
 
 (define (attrs->string attrs)
   (if (null? attrs)
@@ -108,21 +108,22 @@
 
 (define (test name l r)
   (display (if (equal? l r )
-	(format "[TEST] ~A PASSED. L equals R equals ~A\n" name l)
+	(format "[TEST] ~A PASSED. L equals R equals ~A\n" name (unescape-cc l))
 	(format "[TEST] ~A FAILED.\n\tL: ~A\n\tR: ~A\n" name l r) )))
 
 (define (unescape-cc str)
-  (fold-left
-    (lambda (s pair)
+  (fold
+    (lambda (pair s)
       (string-replace-all s (car pair) (cadr pair)))
     str
-    '(("\n" . "\\n")
-      ("\t" . "\\t"))))
+    '(("\n" "\\n")
+      ("\t" "\\t"))))
   
 (begin 
-  (test "test procedure" 0 0)
-  (test "string-replace-all procedure" (string-replace-all "banana" "a" "X") "")
-  (test "escape-html procedure" (escape-html "&<>\"") "")
+  (test "test procedure" "0" "0")
+  (test "string-replace-all procedure" (string-replace-all "banana" "a" "X") "bXnXnX")
+  (test "escape-html procedure" (escape-html "&<>\"") "&amp;&lt;&gt;&quot;")
+  (test "unescape-cc" (unescape-cc "\n\t\n") "\\n\\t\\n")
   (test "web procedure" 
     (web `((title "Q")
 		   (style ,(css-render `((body ((padding "0")))))))
@@ -131,9 +132,3 @@
 	(string-append doctype 
 	  "\n<html><head><title>Q</title><style>body {\n\tpadding:0;\n}\n\n</style></head><body><h1>Z</h1><p>test</p></body></html>"))
 )
-
-#;(begin (display (html5 
-				  `((title "Big T")
-					(style ,(css-render `((body ((background "white")))))))
-				  `((p meow)))))
-
