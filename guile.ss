@@ -3,4 +3,6 @@
 (define (format-local str . args)
   (apply format #f str args))
 
+(include "shared-chicken-guile.ss")
+
 (include "html.ss")

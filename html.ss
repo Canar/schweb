@@ -1,4 +1,5 @@
 (include "util.ss")
+(add-test! "string-replace-all procedure" (string-replace-all "banana" "a" "X") "bXnXnX")
 
 ; CSS stuff
 (define (escape-css str)
@@ -21,14 +22,7 @@
             (rule-render selector props)))
          sexp)))
 
-(define (render-html doc)
-  (string-append
-	"<!doctype html>\n"
-	(serialize-sxml doc method: 'html)
-	"\n"))
-
 ; HTML renderer
- 
 
 (define (escape-html str)
   (fold
@@ -59,7 +53,7 @@
     ((symbol? node) (symbol->string node))
     ((number? node) (number->string node))
     ((boolean? node) (if node "true" "false"))
-    (else (render-html-node (format-local "~A" node)))))
+    (else (render-html-node (string-from node)))))
 
 (define (render-html-node-void tag parts)
    (let loop ((parts parts) (attrs ""))
@@ -96,31 +90,4 @@
   (string-append doctype "\n"
     (render-html-node `(html (head ,@head) (body ,@body)))))
 
-(define (test name l r)
-  (display (if (equal? l r )
-	#;(format "[TEST] ~A PASSED. L equals R equals ~A\n" name (unescape-cc l))
-	#;(string-from ("[TEST] " name " PASSED. L equals R equals " (unescape-cc l) "\n"))
-	(string-from `("[TEST] " name " PASSED. L equals R equals " ,l "\n"))
-	(string-from `("[TEST] " name " FAILED.\n\tL: " l "\n\tR: " r "\n") ))))
-
-(define (unescape-cc str)
-  (fold
-    (lambda (pair s)
-      (string-replace-all s (car pair) (cadr pair)))
-    str
-    '(("\n" "\\n")
-      ("\t" "\\t"))))
-  
-(begin 
-  (test "test procedure" "0" "0")
-  (test "string-replace-all procedure" (string-replace-all "banana" "a" "X") "bXnXnX")
-  (test "escape-html procedure" (escape-html "&<>\"") "&amp;&lt;&gt;&quot;")
-  (test "unescape-cc" (unescape-cc "\n\t\n") "\\n\\t\\n")
-  (test "web procedure" 
-    (web `((title "Q")
-		   (style ,(css-render `((body ((padding "0")))))))
-		 `((h1 "Z")
-		   (p "test")))
-	(string-append doctype 
-	  "\n<html><head><title>Q</title><style>body {\n\tpadding:0;\n}\n\n</style></head><body><h1>Z</h1><p>test</p></body></html>"))
-)
+;(test-all)
