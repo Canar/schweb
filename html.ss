@@ -1,14 +1,4 @@
-(import srfi-1 srfi-13 matchable format)
-
-(define (string-replace-all str from to)
-  (let ((from-len (string-length from)))
-    (let loop ((i 0) (parts '()))
-      (let ((pos (string-contains str from i)))
-        (if pos
-            (loop (+ pos from-len)
-                  (cons to (cons (substring str i pos) parts)))
-            (apply string-append 
-                   (reverse (cons (substring str i) parts))))))))
+(include "util.ss")
 
 ; CSS stuff
 (define (escape-css str)
@@ -69,7 +59,7 @@
     ((symbol? node) (symbol->string node))
     ((number? node) (number->string node))
     ((boolean? node) (if node "true" "false"))
-    (else (render-html-node (format "~A" node)))))
+    (else (render-html-node (format-local "~A" node)))))
 
 (define (render-html-node-void tag parts)
    (let loop ((parts parts) (attrs ""))
@@ -108,8 +98,10 @@
 
 (define (test name l r)
   (display (if (equal? l r )
-	(format "[TEST] ~A PASSED. L equals R equals ~A\n" name (unescape-cc l))
-	(format "[TEST] ~A FAILED.\n\tL: ~A\n\tR: ~A\n" name l r) )))
+	#;(format "[TEST] ~A PASSED. L equals R equals ~A\n" name (unescape-cc l))
+	#;(string-from ("[TEST] " name " PASSED. L equals R equals " (unescape-cc l) "\n"))
+	(string-from `("[TEST] " name " PASSED. L equals R equals " ,l "\n"))
+	(string-from `("[TEST] " name " FAILED.\n\tL: " l "\n\tR: " r "\n") ))))
 
 (define (unescape-cc str)
   (fold
