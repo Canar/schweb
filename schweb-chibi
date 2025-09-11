@@ -1,4 +1,6 @@
-(import (scheme base) (scheme r5rs) (srfi 1) (srfi 130) (chibi trace) (chibi string))
+#!/usr/bin/env chibi
+
+(import (scheme base) (scheme r5rs) (srfi 1) (srfi 130) (chibi) (chibi string))
 
 (define (format-local str . args)
   (apply format str args))
@@ -14,5 +16,8 @@
             (apply string-append
                    (reverse (cons (substring-cursor str cursor (string-cursor-end str)) parts))))))))
 
+(define (arguments) (cdr (command-line)))
+
 (include "html.ss")
 
+; vim: sw=2:ts=2:sts=2:ft=scheme

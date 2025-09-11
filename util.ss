@@ -50,7 +50,7 @@
   (test "escape-html procedure" (escape-html "&<>\"") "&amp;&lt;&gt;&quot;")
   (test "web procedure" 
     (web `((title "Q")
-		   (style ,(css-render `((body ((padding "0")))))))
+		   (style ,(web-style-render `((body ((padding "0")))))))
 		 `((h1 "Z")
 		   (p "test")))
 	(string-append doctype 

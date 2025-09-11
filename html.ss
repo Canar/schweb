@@ -1,13 +1,15 @@
 (include "util.ss")
+
+;platform-specific implementation, general test
 (add-test! "string-replace-all procedure" (string-replace-all "banana" "a" "X") "bXnXnX")
 
 ; CSS stuff
-(define (escape-css str)
+(define (web-style-escape str)
   (string-replace-all str "\"" "\\\""))
 
 (define (property-render prop)
   (let ((name (car prop))
-        (value (escape-css (cadr prop))))
+        (value (web-style-escape (cadr prop))))
     (string-append "\t" (symbol->string name) ":" value ";\n")))
 
 (define (rule-render selector props)
@@ -15,16 +17,21 @@
     (symbol->string selector) " {\n"
     (string-join (map property-render props)) "}\n\n"))
 
-(define (css-render sexp)
+(define (web-style-render sexp)
   (string-join
-    (map (match-lambda
-           ((selector props)
+   (map (lambda (rule)
+          (let ((selector (car rule))
+                (props (cadr rule)))
             (rule-render selector props)))
-         sexp)))
+        sexp)))
 
+
+(add-test! "web-style-render procedure" 
+	(web-style-render `((body ((padding "0")))))
+	"body {\n\tpadding:0;\n}\n\n")
 ; HTML renderer
 
-(define (escape-html str)
+(define (web-entity-encode str)
   (fold
     (lambda (pair s)
       (string-replace-all s (car pair) (cadr pair)))
@@ -34,7 +41,9 @@
       (">" "&gt;") 
       ("\"" "&quot;"))))
 
-(define (attrs->string attrs)
+(add-test! "web-entity-encode procedure" (web-entity-encode "&<>\"") "&amp;&lt;&gt;&quot;")
+
+(define (web-attr-render attrs)
   (if (null? attrs)
       ""
       (apply string-append
@@ -47,13 +56,18 @@
 (define void-tags '(br hr img input meta link base area col embed param source track wbr))
 
 (define (render-html-node node)
-  (cond
-    ((string? node) node)
-    ((list? node) (render-html-list node))
-    ((symbol? node) (symbol->string node))
-    ((number? node) (number->string node))
-    ((boolean? node) (if node "true" "false"))
-    (else (render-html-node (string-from node)))))
+  (if (list? node)
+	(render-html-list node)
+	(string-from node)))
+  
+; (cond
+;    ((string? node) node)
+;    ((list? node) (render-html-list node))
+;    ((symbol? node) (symbol->string node))
+;    ((number? node) (number->string node))
+;    ((boolean? node) (if node "true" "false"))
+;    (else (render-html-node (string-from node)))))
+
 
 (define (render-html-node-void tag parts)
    (let loop ((parts parts) (attrs ""))
@@ -61,7 +75,7 @@
 	   ((null? parts) (string-append "<" (render-html-node tag) attrs " />"))
 	   ((and (pair? (car parts))
 			 (eq? (caar parts) '@))
-		(loop (cdr parts) (attrs->string (cdar (car parts)))))
+		(loop (cdr parts) (web-attr-render (cdar (car parts)))))
 	   (else (loop (cdr parts) attrs)))))
 
 (define (render-html-node-nonvoid tag parts)
@@ -74,7 +88,7 @@
 		  "</" (render-html-node tag) ">"))
 	   ((and (pair? (car parts))
 			 (eq? (caar parts) '@))
-		(loop (cdr parts) (attrs->string (cdar (car parts))) body))
+		(loop (cdr parts) (web-attr-render (cdar (car parts))) body))
 	   (else
 		(loop (cdr parts) attrs (cons (car parts) body))))))
 
@@ -86,8 +100,25 @@
 	   (render-html-node-nonvoid tag parts))))
 
 (define doctype "<!DOCTYPE html>")
+
 (define (web head body)
   (string-append doctype "\n"
     (render-html-node `(html (head ,@head) (body ,@body)))))
 
-;(test-all)
+(add-test! "web procedure" 
+	(web `((title "Q")
+		   (style ,(web-style-render `((body ((padding "0")))))))
+		 `((h1 "Z")
+		   (p "test")))
+	(string-append doctype 
+	  "\n<html><head><title>Q</title><style>body {\n\tpadding:0;\n}\n\n</style></head><body><h1>Z</h1><p>test</p></body></html>"))
+
+(define (arguments-handle)
+	(let ((args (arguments)))
+			 (cond
+				 ((null? args) (display "bro"))
+				 ((equal? (car args) "--test") (run-tests)))))
+
+(arguments-handle)
+
+; vim: sw=2:ts=2:sts=2:ft=scheme

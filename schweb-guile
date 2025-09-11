@@ -1,0 +1,14 @@
+#!/usr/bin/env -S guile --no-auto-compile 
+!#
+(use-modules (srfi srfi-1) (ice-9 format) (ice-9 match))
+
+(define (format-local str . args)
+  (apply format #f str args))
+
+(include "util-string-replace-all-std.ss")
+
+(define (arguments) (cdr (command-line)))
+
+(include "html.ss")
+
+; vim: sw=2:ts=2:sts=2:ft=scheme
