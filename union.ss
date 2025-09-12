@@ -1,14 +1,9 @@
 (cond-expand
 	(guile (use-modules (srfi srfi-1) (ice-9 format) (ice-9 match)))
-	(chibi (import (scheme base) (scheme r5rs) (srfi 1) (srfi 130) (chibi) (chibi string)))
+	(chibi (import (scheme base) (scheme r5rs) (srfi 1) (chibi) (chibi string)))
+	;(chibi (import (scheme base) (scheme r5rs) (srfi 1) (srfi 130) (chibi) (chibi string)))
 	(chicken (import srfi-1 srfi-13 matchable format (chicken process-context)))
-)
-
-(cond-expand
-	(guile 
-		(define (format-local str . args) (apply format #f str args)))
-	((or chibi chicken)
-		(define (format-local str . args) (apply format str args)))
+	(mit-gnu-scheme 'mit)
 )
 
 (cond-expand

@@ -12,6 +12,6 @@ case "$1" in
 	chibi | b ) run_chibi "${@:2}" ;;
 	chicken | n ) run_chicken "${@:2}" ;;
 	guile | g ) run_guile "${@:2}" ;;
-	all | a ) for f in chibi chicken guile ; do run_$f "${@:2}" ; done ;;
+	all | a ) for f in chibi chicken guile ; do echo "   $f   " ; run_$f "${@:2}" ; done ;;
 	* ) echo "idiot" ;; 
 esac
