@@ -1,0 +1,17 @@
+#!/bin/bash
+run_chibi(){
+	chibi "$@"
+}
+run_chicken(){
+	csi -s "$@"
+}
+run_guile(){
+	guile --no-auto-compile "$@"
+}
+case "$1" in
+	chibi | b ) run_chibi "${@:2}" ;;
+	chicken | n ) run_chicken "${@:2}" ;;
+	guile | g ) run_guile "${@:2}" ;;
+	all | a ) for f in chibi chicken guile ; do run_$f "${@:2}" ; done ;;
+	* ) echo "idiot" ;; 
+esac
