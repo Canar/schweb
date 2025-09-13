@@ -1,4 +1,5 @@
 #!/bin/bash
+#just passes command-line arguments to tinyscheme
 export TINYSCHEMEINIT=/usr/share/tinyscheme/init.scm
-echo "(define symbol_arguments '("${@:2}"))">argv
-tinyscheme "$1"
+echo "(define symbol_arguments '("${@:3}"))">argv
+"$1" "$2"

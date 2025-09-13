@@ -4,7 +4,7 @@
 	(guile (use-modules (srfi srfi-1) (ice-9 format) (ice-9 match)))
 	(chibi (import (scheme base) (scheme r5rs) (srfi 1) (chibi) (chibi string)))
 	(chicken (import srfi-1 srfi-13 matchable format (chicken process-context)))
-	(mit (display "mit"))
+	(mit (load-option 'srfi-13))
 )
 
 (cond-expand

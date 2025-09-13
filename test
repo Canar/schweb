@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-for f in ./schweb-* ; do
-	echo "== $f =="
-	$f --test
-done
