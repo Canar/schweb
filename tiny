@@ -1,3 +1,4 @@
 #!/bin/bash
-echo "(define (arguments) (list "${@:2}"))">argv
+export TINYSCHEMEINIT=/usr/share/tinyscheme/init.scm
+echo "(define (symbol_arguments) ('("${@:2}")))">argv
 tinyscheme "$1"

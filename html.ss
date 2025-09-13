@@ -15,33 +15,42 @@
 (define (rule-render selector props)
   (string-append
     (symbol->string selector) " {\n"
-    (string-join (map property-render props)) "}\n\n"))
+    (apply string-append (map property-render props)) "}\n\n"))
 
+(add-test! "rule-render procedure" 
+	(rule-render 'body '((padding "0")))
+	"body {\n\tpadding:0;\n}\n\n")
+
+(display "a")
 (define (web-style-render sexp)
   (string-join
    (map (lambda (rule)
           (let ((selector (car rule))
                 (props (cadr rule)))
             (rule-render selector props)))
-        sexp)))
+        sexp) ""))
+(display "b")
 
 
 (add-test! "web-style-render procedure" 
-	(web-style-render `((body ((padding "0")))))
+	(web-style-render '((body ((padding "0")))))
 	"body {\n\tpadding:0;\n}\n\n")
 ; HTML renderer
+(display "c")
 
 (define (web-entity-encode str)
   (fold
     (lambda (pair s)
-      (string-replace-all s (car pair) (cadr pair)))
+      (begin (display pair) (newline) (display s) (newline)  (string-replace-all s (car pair) (cadr pair))))
     str
     '(("&" "&amp;")
       ("<" "&lt;")
       (">" "&gt;") 
       ("\"" "&quot;"))))
 
+(display "d")
 (add-test! "web-entity-encode procedure" (web-entity-encode "&<>\"") "&amp;&lt;&gt;&quot;")
+(display "e")
 
 (define (web-attr-render attrs)
   (if (null? attrs)
@@ -112,13 +121,4 @@
 		   (p "test")))
 	(string-append doctype 
 	  "\n<html><head><title>Q</title><style>body {\n\tpadding:0;\n}\n\n</style></head><body><h1>Z</h1><p>test</p></body></html>"))
-
-(define (arguments-handle)
-	(let ((args (arguments)))
-			 (cond
-				 ((null? args) (display "bro"))
-				 ((equal? (car args) "--test") (run-tests)))))
-
-(arguments-handle)
-
 ; vim: sw=2:ts=2:sts=2:ft=scheme

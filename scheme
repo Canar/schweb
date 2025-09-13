@@ -10,7 +10,6 @@ exe=(
 	[tiny]="./tiny"
 	[mit]="mit-scheme"
 )
-export TINYSCHEMEINIT=/usr/share/tinyscheme/init.scm
 ################################################################################
 
 [[ -f local ]] && source local
