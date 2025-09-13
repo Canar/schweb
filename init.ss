@@ -3,11 +3,12 @@
 	(chibi (import (scheme base) (scheme r5rs) (srfi 1) (chibi) (chibi string)))
 	;(chibi (import (scheme base) (scheme r5rs) (srfi 1) (srfi 130) (chibi) (chibi string)))
 	(chicken (import srfi-1 srfi-13 matchable format (chicken process-context)))
-	(mit-gnu-scheme 'mit)
+	(mit (display "mit"))
+	(tinyscheme (display "tiny"))
 )
 
 (cond-expand
-	((or guile chicken)
+	((or guile chicken mit)
 		(define (string-replace-all str from to)
 			(let ((from-len (string-length from)))
 				(let loop ((i 0) (parts '()))
@@ -30,10 +31,21 @@
 											 (reverse (cons (substring-cursor str cursor (string-cursor-end str)) parts))))))))))
 
 (cond-expand
-	((or guile chibi)
+	((or guile chibi mit)
 		(define (arguments) (cdr (command-line))))
 	(chicken
 		(define (arguments) (command-line-arguments))))
+
+(cond-expand
+	(tinyscheme 
+		(define (include file) (load file))
+		(define (fold proc init lst)
+			(if (null? lst)
+					init
+					(fold proc (proc init (car lst)) (cdr lst))))
+		(load "argv")
+		(display tsargs))
+	 (else (begin #t)))
 
 (include "html.ss")
 

@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "(define (arguments) (list "${@:2}"))">argv
+tinyscheme "$1"
