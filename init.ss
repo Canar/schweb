@@ -1,10 +1,8 @@
 (cond-expand
 	(guile (use-modules (srfi srfi-1) (ice-9 format) (ice-9 match)))
 	(chibi (import (scheme base) (scheme r5rs) (srfi 1) (chibi) (chibi string)))
-	;(chibi (import (scheme base) (scheme r5rs) (srfi 1) (srfi 130) (chibi) (chibi string)))
 	(chicken (import srfi-1 srfi-13 matchable format (chicken process-context)))
 	(mit (display "mit"))
-	(tinyscheme (display "tiny"))
 )
 
 (cond-expand
@@ -32,9 +30,9 @@
 
 (cond-expand
 	((or guile chibi mit)
-		(define (arguments) (cdr (command-line))))
+		(define arguments (cdr (command-line))))
 	(chicken
-		(define (arguments) (command-line-arguments))))
+		(define arguments (command-line-arguments))))
 
 (cond-expand
 	(tinyscheme 
@@ -66,7 +64,7 @@
 							result
 							(loop (string-append result sep (car rest))
 										(cdr rest))))))
-		(define (arguments) ((display "symbol_arguments") (apply symbol->string (symbol_arguments)))))
+		(define arguments (map symbol->string symbol_arguments)))
 	 (else (begin #t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -118,9 +116,9 @@
 (include "html.ss")
 
 (define (arguments-handle)
-	(let ((args (arguments)))
+	(let ((args arguments))
 			 (cond
-				 ((null? args) (display "bro"))
+				 ((null? args) (begin #t))
 				 ((equal? (car args) "--test") (display (car args)) (run-tests)))))
 
 (arguments-handle)
