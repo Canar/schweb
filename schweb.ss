@@ -4,7 +4,7 @@
 	(guile (use-modules (srfi srfi-1) (ice-9 format) (ice-9 match)))
 	(chibi (import (scheme base) (scheme r5rs) (srfi 1) (chibi) (chibi string)))
 	(chicken (import srfi-1 srfi-13 matchable format (chicken process-context)))
-	(mit (load-option 'srfi-13))
+	(else #t)
 )
 
 (cond-expand
@@ -44,6 +44,13 @@
 					init
 					(fold proc (proc (car lst) init) (cdr lst))))
 		(load "argv")
+		(define arguments (map symbol->string symbol_arguments)))
+	 (else #t))
+
+;;;string;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(cond-expand
+	((or tinyscheme mit) 
 	(define (string-contains str substr . rest)
 		(let ((start (if (null? rest) 0 (car rest)))
 					(sub-len (string-length substr))
@@ -65,11 +72,8 @@
 					  (if (null? rest)
 							result
 							(loop (string-append result sep (car rest))
-										(cdr rest))))))
-		(define arguments (map symbol->string symbol_arguments)))
-	 (else (begin #t)))
-
-;;;string;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+										(cdr rest)))))))
+	(else #t))
 
 (define (string-from value)
   (cond

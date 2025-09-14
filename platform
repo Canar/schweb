@@ -7,23 +7,28 @@ exe=(
 	[chibi]="chibi"
 	[guile]="guile --no-auto-compile"
 	[tiny]="./tiny tinyscheme" # tinyscheme is the executable, ./tiny is shim
-	[mit]="mit-scheme --load"
+	[mit]="mit-scheme"
 )
 ################################################################################
 [[ -f local ]] && source local
 
+run_mit(){
+	echo ${exe[mit]} --load "$1" -- "${@:2}"
+}
+
 #all="chibi chicken guile mit tiny"
-all="chibi chicken guile tiny"
-#all=${!exe[@]}
+#all="chibi chicken guile tiny"
+all=${!exe[@]}
 all=$( echo $all | tr ' ' '\n' | shuf )
 case "$1" in
-	chibi    | b ) ${exe[chibi]} "${@:2}" ;;
-	chicken  | n ) ${exe[chicken]} "${@:2}" ;;
-	guile    | g ) ${exe[guile]} "${@:2}" ;;
-	mit      | m ) ${exe[mit]} "${@:2}" ;;
-	tiny     | t ) ${exe[tiny]} "${@:2}" ;;
+	   chibi | b ) ${exe[chibi]}   "${@:2}" ;;
+	 chicken | n ) ${exe[chicken]} "${@:2}" ;;
+	   guile | g ) ${exe[guile]}   "${@:2}" ;;
+	     mit | m ) run_mit         "${@:2}" ;;
+	    tiny | t ) ${exe[tiny]}    "${@:2}" ;;
 	all | "" | a ) 
 		for f in $all ; do 
-			echo "   $f   " ; time ${exe[$f]} "${@:2}" ; done ;;
+			echo "   $f   " ; time ${exe[$f]} "${@:2}" ; 
+		done ;;
 	* ) echo "idiot" ;; 
 esac
