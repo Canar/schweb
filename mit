@@ -1,0 +1,3 @@
+#!/bin/bash
+#apparently this is the canonical way to do this?
+"$1" --batch-mode -- "${@:3}" <"$2"

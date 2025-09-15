@@ -4,11 +4,12 @@
 	(guile (use-modules (srfi srfi-1) (ice-9 format) (ice-9 match)))
 	(chibi (import (scheme base) (scheme r5rs) (srfi 1) (chibi) (chibi string)))
 	(chicken (import srfi-1 srfi-13 matchable format (chicken process-context)))
-	(else #t)
+	(else)
 )
 
+
 (cond-expand
-	((or guile chicken mit tinyscheme)
+	((or guile chicken mit tinyscheme sigscheme)
 		(define (string-replace-all str from to)
 			(let ((from-len (string-length from)))
 				(let loop ((i 0) (parts '()))
@@ -17,7 +18,7 @@
 								(loop (+ pos from-len)
 											(cons to (cons (substring str i pos) parts)))
 								(apply string-append 
-											 (reverse (cons (substring str i) parts)))))))))
+											 (reverse (cons (substring str i (string-length str)) parts)))))))))
 	(chibi
 		(define (string-replace-all str from to)
 			(let ((from-len (string-length from)))
@@ -31,26 +32,30 @@
 											 (reverse (cons (substring-cursor str cursor (string-cursor-end str)) parts))))))))))
 
 (cond-expand
-	((or guile chibi mit)
+	((or guile chibi)
 		(define arguments (cdr (command-line))))
+	(mit
+		(define arguments (cdddr (command-line))))
 	(chicken
-		(define arguments (command-line-arguments))))
+		(define arguments (command-line-arguments)))
+	(else))
 
 (cond-expand
-	(tinyscheme 
+	((or tinyscheme sigscheme)
 		(define (include file) (load file))
 		(define (fold proc init lst)
 			(if (null? lst)
 					init
 					(fold proc (proc (car lst) init) (cdr lst))))
 		(load "argv")
-		(define arguments (map symbol->string symbol_arguments)))
+		;(define arguments (map symbol->string symbol_arguments))
+		)
 	 (else #t))
 
 ;;;string;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (cond-expand
-	((or tinyscheme mit) 
+	((or tinyscheme mit sigscheme) 
 	(define (string-contains str substr . rest)
 		(let ((start (if (null? rest) 0 (car rest)))
 					(sub-len (string-length substr))
@@ -90,7 +95,6 @@
     ((null? lst) "")
     (else (string-append (string-from (car lst))
                          (string-from-list (cdr lst))))))
-
 (define (unescape-cc str)
   (fold
     (lambda (pair s)
@@ -98,6 +102,7 @@
     (string-from str)
     '(("\n" "\\n")
       ("\t" "\\t"))))
+
 
 ;;;test;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -111,15 +116,19 @@
 (define (add-test! name l r)
   (set! *tests* (append *tests* (list (list name l r)))))
 
+
 (define (run-tests)
   (for-each (lambda (t) (test (car t) (cadr t) (caddr t))) *tests*))
 
+
 ; test depends on unescape-cc, string functions
 (add-test! "test" #t #t)
+(add-test! "unescape-cc" (unescape-cc "0") "0")
 (add-test! "unescape-cc" (unescape-cc "\n\t\n") "\\n\\t\\n")
 (add-test! "string-replace-all" (string-replace-all "banana" "a" "X") "bXnXnX")
 
 ;;;style;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (define (web-style-escape str)
   (string-replace-all str "\"" "\\\""))
@@ -182,7 +191,7 @@
 	 (cond
 	   ((null? parts) (string-append "<" (render-html-node tag) attrs " />"))
 	   ((and (pair? (car parts))
-			 (eq? (caar parts) '@))
+			 (eq? (caar parts) 'attr))
 		(loop (cdr parts) (web-attr-render (cdar (car parts)))))
 	   (else (loop (cdr parts) attrs)))))
 
@@ -195,7 +204,7 @@
 		  (apply string-append (map render-html-node (reverse body)))
 		  "</" (render-html-node tag) ">"))
 	   ((and (pair? (car parts))
-			 (eq? (caar parts) '@))
+			 (eq? (caar parts) 'attr))
 		(loop (cdr parts) (web-attr-render (cdar (car parts))) body))
 	   (else
 		(loop (cdr parts) attrs (cons (car parts) body))))))

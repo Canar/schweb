@@ -1,0 +1,9 @@
+#!/bin/bash
+expand-q(){
+	for i in "$@" ; do 
+		echo "\"$i\""
+	done
+}
+#just passes command-line arguments to an executable
+echo "(define arguments (list "$(expand-q "${@:3}")"))">argv
+"$1" "$2"
