@@ -92,13 +92,13 @@
     ((list? value) (string-from-list value))
     ((pair? value) (string-append (string-from (car value)) (string-from (cdr value))))
 		((procedure? value) "#<procedure>")
-    (else (string-append "#<unknown>"))))
+    (else "#<unknown>")))
 
 (define (string-from-list lst)
-  (cond
-    ((null? lst) "")
-    (else (string-append (string-from (car lst))
-                         (string-from-list (cdr lst))))))
+	(if (null? lst) "" (string-append
+		(string-from (car lst))
+		(string-from-list (cdr lst)))))
+
 (define (unescape-cc str)
   (fold
     (lambda (pair s)
@@ -153,12 +153,10 @@
 	"body {\n\tpadding:0;\n}\n\n")
 
 (define (web-style-render sexp)
-  (string-join
-   (map (lambda (rule)
-          (let ((selector (car rule))
-                (props (cadr rule)))
-            (rule-render selector props)))
-        sexp) ""))
+  (string-from
+   (map (lambda (rule) 
+					(rule-render (car rule) (cadr rule)))
+        sexp)))
 
 (add-test! "web-style-render procedure" (web-style-render '((body ((padding "0"))))) "body {\n\tpadding:0;\n}\n\n")
 
