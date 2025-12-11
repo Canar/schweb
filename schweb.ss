@@ -134,15 +134,13 @@
 ;;;style;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(define (web-style-escape str)
+(define (escape-backslash str)
   (string-replace-all str "\"" "\\\""))
 
 (define (property-render prop)
-  (let ((name (car prop))
-        (value (web-style-escape (string-from (cdr prop)))))
-    (string-append "\t"
-			(string-from name) ":" 
-			(string-from value) ";\n")))
+	(string-append "\t"
+		(string-from (car prop)) ":" 
+		(string-from (escape-backslash (string-from (cdr prop)))) ";\n" ))
 
 (define (rule-render selector props)
   (string-append
