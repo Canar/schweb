@@ -91,8 +91,8 @@
     ((symbol? value) (symbol->string value))
     ((list? value) (string-from-list value))
     ((pair? value) (string-append (string-from (car value)) (string-from (cdr value))))
-    ;; For any other type, return a default string indicating the type.
-    (else (string-append "#<" value ">"))))
+		((procedure? value) "#<procedure>")
+    (else (string-append "#<unknown>"))))
 
 (define (string-from-list lst)
   (cond
@@ -120,10 +120,10 @@
 (define (add-test! name l r)
   (set! *tests* (append *tests* (list (list name l r)))))
 
-
 (define (run-tests)
-  (for-each (lambda (t) (test (car t) (cadr t) (caddr t))) *tests*))
-
+  (for-each
+		(lambda (t) (test (car t) (cadr t) (caddr t))) 
+		*tests*))
 
 ; test depends on unescape-cc, string functions
 (add-test! "test" #t #t)
@@ -145,9 +145,11 @@
 (define (rule-render selector props)
   (string-append
     (string-from selector) " {\n"
-    (apply string-append (map property-render props)) "}\n\n"))
+    (apply string-append (map property-render props)) "}\n\n" ))
 
-(add-test! "rule-render procedure" (rule-render 'body '((padding "0"))) "body {\n\tpadding:0;\n}\n\n")
+(add-test! "rule-render procedure"
+	(rule-render 'body '((padding "0"))) 
+	"body {\n\tpadding:0;\n}\n\n")
 
 (define (web-style-render sexp)
   (string-join
