@@ -118,7 +118,8 @@
 (define *tests* '())
 
 (define (add-test! name l r)
-  (set! *tests* (append *tests* (list (list name l r)))))
+  (set! *tests*
+		(append *tests* (list (list name l r)))))
 
 (define (run-tests)
   (for-each
