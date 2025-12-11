@@ -1,15 +1,17 @@
 ;;;platform;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (cond-expand
-	(guile (use-modules (srfi srfi-1) (ice-9 format) (ice-9 match)))
-	(chibi (import (scheme base) (scheme r5rs) (srfi 1) (chibi) (chibi string)))
+	(guile   (use-modules (srfi srfi-1) (ice-9 format) (ice-9 match)))
+	(chibi   (import (scheme base) (scheme r5rs) (srfi 1) (chibi) (chibi string)))
+	(gambit  (import (gambit) (srfi 13)))
+	;(gambit  (import (gambit) (gambit list) (gambit string)))
 	(chicken (import srfi-1 srfi-13 matchable format (chicken process-context)))
 	(else)
 )
 
 
 (cond-expand
-	((or guile chicken mit tinyscheme sigscheme)
+	((or guile chicken mit tinyscheme sigscheme gambit)
 		(define (string-replace-all str from to)
 			(let ((from-len (string-length from)))
 				(let loop ((i 0) (parts '()))
@@ -29,10 +31,11 @@
 									(loop (string-cursor-forward str found-cursor from-len)
 												(cons to (cons before-match parts))))
 								(apply string-append
-											 (reverse (cons (substring-cursor str cursor (string-cursor-end str)) parts))))))))))
+											 (reverse (cons (substring-cursor str cursor (string-cursor-end str)) parts)))))))))
+	(else))
 
 (cond-expand
-	((or guile chibi)
+	((or guile chibi gambit)
 		(define arguments (cdr (command-line))))
 	(mit
 		(define arguments (cdddr (command-line))))
@@ -87,6 +90,7 @@
     ((boolean? value) (if value "true" "false"))
     ((symbol? value) (symbol->string value))
     ((list? value) (string-from-list value))
+    ((pair? value) (string-append (string-from (car value)) (string-from (cdr value))))
     ;; For any other type, return a default string indicating the type.
     (else (string-append "#<" value ">"))))
 
@@ -135,12 +139,14 @@
 
 (define (property-render prop)
   (let ((name (car prop))
-        (value (web-style-escape (cadr prop))))
-    (string-append "\t" (symbol->string name) ":" value ";\n")))
+        (value (web-style-escape (string-from (cdr prop)))))
+    (string-append "\t"
+			(string-from name) ":" 
+			(string-from value) ";\n")))
 
 (define (rule-render selector props)
   (string-append
-    (symbol->string selector) " {\n"
+    (string-from selector) " {\n"
     (apply string-append (map property-render props)) "}\n\n"))
 
 (add-test! "rule-render procedure" (rule-render 'body '((padding "0"))) "body {\n\tpadding:0;\n}\n\n")
@@ -222,6 +228,11 @@
   (string-append doctype "\n"
     (render-html-node `(html (head ,@head) (body ,@body)))))
 
+(define web-standard '((device-width . "1.0"))) ;0.7 is roughly my usual?
+
+; design notions
+; header font, text font
+
 (add-test! "web procedure" 
 	(web `((title "Q")
 		   (style ,(web-style-render `((body ((padding "0")))))))
@@ -229,6 +240,17 @@
 		   (p "test")))
 	(string-append doctype 
 	  "\n<html><head><title>Q</title><style>body {\n\tpadding:0;\n}\n\n</style></head><body><h1>Z</h1><p>test</p></body></html>"))
+
+;(add-test! "assq"
+;	(string-from (assq 'body '((title . untitled)(body . text))))
+;	(string-from '((body . text))))
+
+(define (style-font-def name) (quasiquote 
+	(("@font-face"
+		((font-family (unquote name))
+		 (src "url('/asset/" (unquote name) ".ttf)"))))))
+
+; (define church-style '((
 
 ;;;argument handling;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
