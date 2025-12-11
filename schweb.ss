@@ -107,7 +107,6 @@
     '(("\n" "\\n")
       ("\t" "\\t"))))
 
-
 ;;;test;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (test name l r)
@@ -134,7 +133,6 @@
 
 ;;;style;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
 (define (escape-backslash str)
   (string-replace-all str "\"" "\\\""))
 
@@ -154,9 +152,9 @@
 
 (define (web-style-render sexp)
   (string-from
-   (map (lambda (rule) 
-					(rule-render (car rule) (cadr rule)))
-        sexp)))
+		(map (lambda (rule) 
+			(rule-render (car rule) (cadr rule)))
+			sexp)))
 
 (add-test! "web-style-render procedure" (web-style-render '((body ((padding "0"))))) "body {\n\tpadding:0;\n}\n\n")
 
