@@ -186,7 +186,7 @@
 
 (define (render-html-node node)
   (if (list? node)
-		(render-html-list-2 node)
+		(render-html-list node)
 		(string-from node)))
   
 (define (render-html-node-void tag parts)
@@ -200,26 +200,20 @@
 
 (define (render-html-node-nonvoid tag parts)
 	(let loop ((parts parts) (attrs "") (body '()))
-	 (cond
-	   ((null? parts)
-		(string-append
-		  "<" (render-html-node tag) attrs ">"
-		  (apply string-append (map render-html-node (reverse body)))
-		  "</" (render-html-node tag) ">"))
-	   ((and (pair? (car parts))
-			 (eq? (caar parts) 'attr))
-		(loop (cdr parts) (web-attr-render (cdar (car parts))) body))
-	   (else
-		(loop (cdr parts) attrs (cons (car parts) body))))))
+		(cond 
+			((null? parts)
+				(string-append
+					"<" (render-html-node tag) attrs ">"
+					(apply string-append (map render-html-node (reverse body)))
+					"</" (render-html-node tag) ">"))
+			((and (pair? (car parts)) (eq? (caar parts) 'attr))
+				(loop (cdr parts) (web-attr-render (cdar (car parts))) body))
+			(else
+				(loop (cdr parts) attrs (cons (car parts) body))))))
 
-(define (render-html-list-2 node)
+(define (render-html-list node)
 	(apply (if (member (car node) void-tags) render-html-node-void render-html-node-nonvoid)
 		(quasiquote ((unquote (car node)) (unquote (cdr node))))))
-
-(define (render-html-list-0 node)
-	(if (member (car node) void-tags)
-		(render-html-node-void (car node) (cdr node))
-		(render-html-node-nonvoid (car node) (cdr node))))
 
 (define doctype "<!DOCTYPE html>")
 
