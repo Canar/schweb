@@ -177,16 +177,16 @@
   (if (null? attrs) ""
       (apply string-append
              (map (lambda (attr)
-                    (let ((k (car attr))
-                          (v (cadr attr)))
-                      (string-append " " (symbol->string k) "=\"" v "\"")))
-                  attrs))))
+                          (let ((k (car attr))
+                                (v (cadr attr)))
+                               (string-append " " (symbol->string k) "=\"" v "\"")))
+              attrs))))
 
 (define void-tags '(br hr img input meta link base area col embed param source track wbr))
 
 (define (render-html-node node)
   (if (list? node)
-		(render-html-list node)
+ 		(render-html-list node)
 		(string-from node)))
   
 (define (render-html-node-void tag parts)
@@ -250,11 +250,9 @@
 
 ;;;argument handling;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define (arguments-handle)
-	(let ((args arguments))
-			 (cond
-				 ((null? args) #t)
-				 ((equal? (car args) "--test") (run-tests)))))
+(define (arguments-handle) (cond
+	((null? arguments) #t)
+	((equal? (car arguments) "--test") (run-tests))))
 
 (arguments-handle)
 
