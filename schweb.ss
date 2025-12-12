@@ -160,21 +160,21 @@
 
 ;;;web;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define entity-map 
+	'(("&" "&amp;")
+		("<" "&lt;")
+		(">" "&gt;") 
+		("\"" "&quot;")))
+
 (define (web-entity-encode str)
   (fold
-    (lambda (pair s)
-      (string-replace-all s (car pair) (cadr pair)))
-    str
-    '(("&" "&amp;")
-      ("<" "&lt;")
-      (">" "&gt;") 
-      ("\"" "&quot;"))))
+    (lambda (pair s) (string-replace-all s (car pair) (cadr pair)))
+    str entity-map))
 
 (add-test! "web-entity-encode procedure" (web-entity-encode "&<>\"") "&amp;&lt;&gt;&quot;")
 
 (define (web-attr-render attrs)
-  (if (null? attrs)
-      ""
+  (if (null? attrs) ""
       (apply string-append
              (map (lambda (attr)
                     (let ((k (car attr))
@@ -186,8 +186,8 @@
 
 (define (render-html-node node)
   (if (list? node)
-	(render-html-list node)
-	(string-from node)))
+		(render-html-list node)
+		(string-from node)))
   
 (define (render-html-node-void tag parts)
    (let loop ((parts parts) (attrs ""))
