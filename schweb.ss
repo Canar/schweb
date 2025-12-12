@@ -213,18 +213,18 @@
 		(loop (cdr parts) attrs (cons (car parts) body))))))
 
 (define (render-html-list node)
- (let ((tag (car node))
-	   (parts (cdr node)))
-   (if (member tag void-tags)
-	   (render-html-node-void tag parts)
-	   (render-html-node-nonvoid tag parts))))
+	(if (member (car node) void-tags)
+		(render-html-node-void (car node) (cdr node))
+		(render-html-node-nonvoid (car node) (cdr node))))
 
 (define doctype "<!DOCTYPE html>")
 
 (define (web head body)
   (string-append doctype "\n"
     (render-html-node (quasiquote 
-			(html (head (unquote-splicing head)) (body (unquote-splicing body)))))))
+			(html
+				(head (unquote-splicing head)) 
+				(body (unquote-splicing body)))))))
 
 (define web-standard '((device-width . "1.0"))) ;0.7 is roughly my usual?
 
