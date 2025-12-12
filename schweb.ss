@@ -111,8 +111,8 @@
 
 (define (test name l r)
   (display (if (equal? l r )
-	(string-from (list "test " name " passed. " (unescape-cc l) "\n"))
-	(string-from (list "test " name " failed.\n\tL: " l "\n\tR: " r "\n") ))))
+		(string-from (list "test " name " passed. " (unescape-cc l) "\n"))
+		(string-from (list "test " name " failed.\n\tL: " l "\n\tR: " r "\n") ))))
 
 (define *tests* '())
 
@@ -139,7 +139,7 @@
 (define (property-render prop)
 	(string-append "\t"
 		(string-from (car prop)) ":" 
-		(string-from (escape-backslash (string-from (cdr prop)))) ";\n" ))
+		(escape-backslash (string-from (cdr prop))) ";\n" ))
 
 (define (rule-render selector props)
   (string-append
@@ -223,7 +223,8 @@
 
 (define (web head body)
   (string-append doctype "\n"
-    (render-html-node `(html (head ,@head) (body ,@body)))))
+    (render-html-node (quasiquote 
+			(html (head (unquote-splicing head)) (body (unquote-splicing body)))))))
 
 (define web-standard '((device-width . "1.0"))) ;0.7 is roughly my usual?
 
