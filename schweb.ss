@@ -186,7 +186,7 @@
 
 (define (render-html-node node)
   (if (list? node)
-		(render-html-list node)
+		(render-html-list-2 node)
 		(string-from node)))
   
 (define (render-html-node-void tag parts)
@@ -213,11 +213,10 @@
 		(loop (cdr parts) attrs (cons (car parts) body))))))
 
 (define (render-html-list-2 node)
-	(apply 
-		(if (member (car node) void-tags) render-html-node-void render-html-node-nonvoid)
-		(car node) (cdr node)))
+	(apply (if (member (car node) void-tags) render-html-node-void render-html-node-nonvoid)
+		(quasiquote ((unquote (car node)) (unquote (cdr node))))))
 
-(define (render-html-list node)
+(define (render-html-list-0 node)
 	(if (member (car node) void-tags)
 		(render-html-node-void (car node) (cdr node))
 		(render-html-node-nonvoid (car node) (cdr node))))
