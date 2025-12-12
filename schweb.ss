@@ -212,6 +212,11 @@
 	   (else
 		(loop (cdr parts) attrs (cons (car parts) body))))))
 
+(define (render-html-list-2 node)
+	(apply 
+		(if (member (car node) void-tags) render-html-node-void render-html-node-nonvoid)
+		(car node) (cdr node)))
+
 (define (render-html-list node)
 	(if (member (car node) void-tags)
 		(render-html-node-void (car node) (cdr node))
