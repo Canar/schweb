@@ -38,6 +38,7 @@ The `./platform` script is coded to point at Gentoo's executable names, may vary
 
 ## Release Log
 
-2025-09-11 - Uploaded to Github for synchronization reasons
-2025-09-12 - Learning to make multi-plat Scheme work, `./scheme` bash launcher
-2025-09-14 - SigScheme support added, renamed some files.
+2025-09-11 - Uploaded to Github for synchronization reasons\
+2025-09-12 - Learning to make multi-plat Scheme work, `./scheme` bash launcher\
+2025-09-14 - SigScheme support added, renamed some files.\
+2025-12-30 - Started implementing an old site
