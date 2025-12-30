@@ -1,0 +1,116 @@
+@font-face{
+	font-family:'bierstadt';
+	src:url('/asset/bierstadt.ttf');
+}
+@font-face{
+	font-family:'grandview';
+	src:url('/asset/grandview.ttf');
+}
+@font-face{
+	font-family:'tenorite';
+	src:url('/asset/tenorite.ttf');
+}
+@font-face{
+	font-family:skeena;
+	src:url('/asset/skeena.ttf');
+}
+@font-face{
+	font-family:seaford;
+	src:url('/asset/seaford.ttf');
+}
+html{
+	font-family:bierstadt,sans-serif;
+}
+h1,h2{
+	font-family:tenorite,sans-serif;
+}
+body{
+	padding:0;
+	margin:0;
+}
+img,li{display:block;}
+img{
+	image-rendering: pixelated;
+	width:20rem;
+	margin:5rem auto;
+}
+p a{
+	margin:0;
+}
+ul{padding:0;}
+h1,h2,ul,.c,.lyric{
+	width:fit-content;
+	margin-left:auto;
+	margin-right:auto;
+}
+h1{
+	margin-top:1em;
+	margin-bottom:1em;
+}
+h2{
+	margin-bottom:0.3em;
+	margin-top:0;
+}
+hr{
+	margin-top:3em;
+	margin-bottom:3em;
+}
+.c{
+	margin-top:0;
+	margin-bottom:0;
+	margin-top:3em;
+	margin-bottom:3em;
+}
+hr{
+	border:0px;
+	width:20%;
+	height:1px;
+	background:black;
+}
+.phrase{
+	margin-top:0.7em;
+}
+p{
+	margin:0;
+	padding:0;
+}
+.lyric{
+	margin-bottom:1.5em;
+}
+@media screen{
+	h1,h2,ul,.c,.lyric{
+		white-space:nowrap;
+	}
+}
+@media print{
+	@page {
+		size: letter landscape;
+	}
+	h1{
+		display:none;
+	}
+	h2{
+		font-size:110%;
+		text-align:left;
+	}
+	html{
+		columns: 3;
+		column-fill:auto;
+	}
+	html * {
+		white-space: auto;
+	}
+	.c,hr {
+		display:none;
+	}
+	p{
+		padding-left:2em;
+		text-indent:-2em;
+		font-size:90%;
+	}
+	.phrase{
+		break-before:avoid;
+		break-inside:avoid;
+		break-after:auto;
+	}
+}

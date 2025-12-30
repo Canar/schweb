@@ -9,7 +9,6 @@
 	(else)
 )
 
-
 (cond-expand
 	((or guile chicken mit tinyscheme sigscheme gambit)
 		(define (string-replace-all str from to)
@@ -58,7 +57,7 @@
 ;;;string;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (cond-expand
-	((or tinyscheme mit sigscheme) 
+	((or tinyscheme mit sigscheme)
 	(define (string-contains str substr . rest)
 		(let ((start (if (null? rest) 0 (car rest)))
 					(sub-len (string-length substr))
@@ -173,6 +172,12 @@
 
 (add-test! "web-entity-encode procedure" (web-entity-encode "&<>\"") "&amp;&lt;&gt;&quot;")
 
+(define (web-attr-render-1 attrs)
+  (if (null? attrs) ""
+      (apply string-append
+             (map (lambda (attr)
+												  (string-append " " (string-from (car attr)) "=\"" (string-from (cadr attr)) "\""))
+              attrs))))
 (define (web-attr-render attrs)
   (if (null? attrs) ""
       (apply string-append
